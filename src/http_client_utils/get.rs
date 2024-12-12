@@ -6,7 +6,7 @@ use hyper::Response;
 use hyper::body::Incoming;
 use tokio::net::TcpStream;
 
-pub async fn http_fetch_raw(uri: &str) -> Result<Response<Incoming>, Box<dyn std::error::Error + Send + Sync>> {
+pub async fn http_get_raw(uri: &str) -> Result<Response<Incoming>, Box<dyn std::error::Error + Send + Sync>> {
     let uri = uri.parse::<hyper::Uri>()?;
     let host = uri.host().expect("uri has no host");
     let port = uri.port_u16().unwrap_or(80);
@@ -34,50 +34,49 @@ pub async fn http_fetch_raw(uri: &str) -> Result<Response<Incoming>, Box<dyn std
     Ok(res)
 }
 
-pub async fn http_fetch_bytes(uri: &str) -> Result<Bytes, Box<dyn std::error::Error + Send + Sync>> {
-    let res = http_fetch_raw(uri).await?;
+pub async fn http_get_bytes(uri: &str) -> Result<Bytes, Box<dyn std::error::Error + Send + Sync>> {
+    let res = http_get_raw(uri).await?;
     let mut body = res.collect().await?.aggregate();
     Ok(body.copy_to_bytes(body.remaining()))
 }
 
-pub async fn http_fetch_string(uri: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-    let bytes = http_fetch_bytes(uri).await?;
+pub async fn http_get_string(uri: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+    let bytes = http_get_bytes(uri).await?;
     Ok(String::from_utf8(bytes.to_vec())?)
 }
 
-pub async fn http_fetch_json(uri: &str) -> Result<serde_json::Value, Box<dyn std::error::Error + Send + Sync>> {
-    let res = http_fetch_raw(uri).await?;
+pub async fn http_get_json(uri: &str) -> Result<serde_json::Value, Box<dyn std::error::Error + Send + Sync>> {
+    let res = http_get_raw(uri).await?;
     let body = res.collect().await?.aggregate();
     let json = serde_json::from_reader(body.reader())?;
     Ok(json)
 }
 
 #[cfg(test)]
-
 mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn test_http_fetch_raw() {
-        let res = http_fetch_raw("http://httpbin.org/get").await.unwrap();
+    async fn test_http_get_raw() {
+        let res = http_get_raw("http://httpbin.org/get").await.unwrap();
         assert_eq!(res.status(), 200);
     }
 
     #[tokio::test]
-    async fn test_http_fetch_bytes() {
-        let bytes = http_fetch_bytes("http://httpbin.org/get").await.unwrap();
+    async fn test_http_get_bytes() {
+        let bytes = http_get_bytes("http://httpbin.org/get").await.unwrap();
         assert!(bytes.len() > 0);
     }
 
     #[tokio::test]
-    async fn test_http_fetch_string() {
-        let string = http_fetch_string("http://httpbin.org/get").await.unwrap();
+    async fn test_http_get_string() {
+        let string = http_get_string("http://httpbin.org/get").await.unwrap();
         assert!(string.len() > 0);
     }
 
     #[tokio::test]
-    async fn test_http_fetch_json() {
-        let json = http_fetch_json("http://httpbin.org/get").await.unwrap();
+    async fn test_http_get_json() {
+        let json = http_get_json("http://httpbin.org/get").await.unwrap();
         assert_eq!(json["url"], "http://httpbin.org/get");
     }
 }
