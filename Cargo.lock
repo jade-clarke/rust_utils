@@ -376,8 +376,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust_utilities"
-version = "0.1.0"
+name = "rust_utils"
+version = "0.1.1"
 dependencies = [
  "bytes",
  "http-body-util",

@@ -1,6 +1,6 @@
 [package]
-name = "rust_utilities"
-version = "0.1.0"
+name = "rust_utils"
+version = "0.1.1"
 edition = "2021"
 
 [features]
